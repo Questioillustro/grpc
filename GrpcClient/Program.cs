@@ -3,8 +3,8 @@ using Grpc.Core.Interceptors;
 using Grpc.Net.Client;
 using GrpcExample;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
+using Serilog;
+using Serilog.Formatting.Compact;
 
 namespace GrpcClient
 {
@@ -12,13 +12,27 @@ namespace GrpcClient
     {
         static async Task Main(string[] args)
         {
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Information()
+                .Enrich.WithProperty("Application", "gRPC Client")
+                .Enrich.FromLogContext()
+                .WriteTo.Console(
+                    outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} | Props: {Properties}{NewLine}{Exception}"
+                )
+                .WriteTo.File(
+                    new CompactJsonFormatter(), 
+                    "logs/grpc-client.json", 
+                    rollingInterval: RollingInterval.Day
+                )
+                .CreateLogger();
+
             var loggerFactory = LoggerFactory.Create(builder =>
             {
-                builder.AddConsole(); 
                 builder.SetMinimumLevel(LogLevel.Information);
+                builder.AddSerilog(Log.Logger);
             });
 
-            using var channel = GrpcChannel.ForAddress("http://localhost:5285");
+            using var channel = GrpcChannel.ForAddress("http://localhost:32768");
             var invoker = channel.Intercept(new LoggingInterceptor(loggerFactory));
 
             var client = new Greeter.GreeterClient(invoker);
