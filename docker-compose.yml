@@ -4,3 +4,10 @@ services:
     build:
       context: .
       dockerfile: GrpcServer/Dockerfile
+
+  grpcclientservice:
+    image: ${DOCKER_REGISTRY-}grpcclientservice
+    build:
+      context: .
+      dockerfile: GrpcClientService/Dockerfile
+

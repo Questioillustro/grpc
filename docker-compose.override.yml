@@ -4,11 +4,31 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
+      - ASPNETCORE_URLS=http://+:8080;https://+:8081
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/home/app/.aspnet/https/grpcserver.pfx
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=yourpassword
     ports:
       - "32768:8080"
       - "32769:8081"
     volumes:
+      - ${USERPROFILE}/.aspnet/https:/home/app/.aspnet/https:ro
+      - ${USERPROFILE}/.aspnet/https:/root/.aspnet/https:ro
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
-      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
-      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+
+  grpcclientservice:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ASPNETCORE_URLS=http://+:8080;https://+:8081
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/home/app/.aspnet/https/grpcclientservice.pfx
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=yourpassword
+    ports:
+      - "32770:8080"
+      - "32771:8081"
+    volumes:
+      - ${USERPROFILE}/.aspnet/https:/home/app/.aspnet/https:ro
+      - ${USERPROFILE}/.aspnet/https:/root/.aspnet/https:ro
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro

@@ -5,6 +5,7 @@ using GrpcExample;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Formatting.Compact;
+using Serilog.Context;
 
 namespace GrpcClient
 {
@@ -28,7 +29,6 @@ namespace GrpcClient
 
             var loggerFactory = LoggerFactory.Create(builder =>
             {
-                builder.SetMinimumLevel(LogLevel.Information);
                 builder.AddSerilog(Log.Logger);
             });
 
@@ -37,7 +37,14 @@ namespace GrpcClient
 
             var client = new Greeter.GreeterClient(invoker);
 
-            var helloReply = await client.SayHelloAsync(new HelloRequest { Name = "Client" });
+            var correlationIdUnary = Guid.NewGuid().ToString();
+            var headersUnary = new Metadata { { "correlation-id", correlationIdUnary } };
+            var optionsUnary = new CallOptions(headers: headersUnary);
+            
+            using (LogContext.PushProperty("CorrelationId", correlationIdUnary))
+            {
+                var helloReply = await client.SayHelloAsync(new HelloRequest { Name = "Client" }, optionsUnary);
+            }
 
             var request = new HelloRequest { Name = "Stream to Client" };
             var callOptions = new CallOptions(deadline: DateTime.UtcNow.AddSeconds(1));
